@@ -33,17 +33,19 @@ impl<'buf,const HC:usize> HttpRequest<'buf, HC> {
         self.http_first_line.version
     }
     /// getting http request path
-    pub fn path(&self)->&'buf HttpPath{
+    pub fn path(&self)->&HttpPath<'buf>{
         &self.http_first_line.path
     }
 
-
+    #[inline]
     /// http first line
-    pub fn first_line(&self)->&HttpFirstLine<'buf>{
+    pub const fn first_line(&self)->&HttpFirstLine<'buf>{
         &self.http_first_line
     }
+
+    #[inline]
     /// returning all request headers referenced
-    pub fn headers(&self)->&HttpHeaders<'buf,HC>{
+    pub const fn headers(&self)->&HttpHeaders<'buf,HC>{
         &self.headers
     }
 
@@ -194,28 +196,47 @@ impl<'buf> HttpPath<'buf> {
     pub fn get_bytes(&self)->&'buf [u8]{
         self.bytes
     }
-    /// forming path to path and query
-    pub fn split_to_path_and_query(&self) -> (String, HashMap<String, String>) {
-        let url = self.to_str();
-        // Split the URL into path and query string
-        let parts: Vec<&str> = url.splitn(2, '?').collect();
-        let path = parts[0].to_string();
 
-        let mut query_params = HashMap::new();
-        if parts.len() > 1 {
-            for pair in parts[1].split('&') {
-                let kv: Vec<&str> = pair.splitn(2, '=').collect();
-                if kv.len() == 2 {
-                    query_params.insert(
-                        kv[0].to_string(),
-                        kv[1].to_string()
-                    );
+    #[inline(always)]
+    pub fn to_query(&self)->Option<(&'buf str,HashMap<&'buf str,&'buf str>)> {
+        let mut map = HashMap::new();
+        let path  = self.bytes;
+        let mut clean_path = path;
+        let mut cursor = 0_usize;
+        let mut key = None;
+        let length = path.len();
+        for (index,q) in path.iter().enumerate() {
+            match q {
+                b'?'=>{
+                    clean_path = &path[..index];
+                    cursor = index+1;
+                    if cursor >= length { return  None }
                 }
+                b'='=>{
+                    key = Some(&path[cursor..index]);
+                    cursor = index+1;
+                    if cursor >= length {
+                        if map.is_empty() {return  None}
+                        return Some((unsafe{std::str::from_utf8_unchecked(clean_path)},map))
+                    }
+                }
+                b'&'=>{
+                    if let Some(k) = key {
+                        unsafe {map.insert(std::str::from_utf8_unchecked(k),std::str::from_utf8_unchecked(&path[cursor..index]))};
+                        cursor=index+1;
+                        key = None;
+                    }
+                }
+                _=>{}
             }
         }
-
-        (path, query_params)
+        if let Some(k ) = key {
+            unsafe {map.insert(std::str::from_utf8_unchecked(k),std::str::from_utf8_unchecked(&path[cursor..]));}
+        }
+        if map.is_empty() {return None}
+        return Some((unsafe{std::str::from_utf8_unchecked(clean_path)},map))
     }
+
 }
 
 

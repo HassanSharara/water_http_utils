@@ -138,7 +138,7 @@ impl<'buf,const HL:usize> HttpHeaders<'buf,HL>{
         None
     }
     /// getting all header lines
-    pub fn lines(&self)->Vec<&HeaderLine>{
+    pub fn lines(&self)->Vec<&HeaderLine<'buf>>{
         self.lines.iter().filter(|x| !x.key.is_empty()).collect()
     }
 
