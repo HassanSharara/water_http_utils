@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="ALL" />
+  </component>
+  <component name="CargoProjects">
+    <cargoProject FILE="$PROJECT_DIR$/Cargo.toml" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="289286b1-1b40-4c0a-b27b-23d2e47589e1" name="Changes" comment="change bytes to usize conversion" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Rust File" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MacroExpansionManager">
+    <option name="directoryName" value="fb5qqvah" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 2
+}</component>
+  <component name="ProjectId" id="2tBX2iAZ1gO8a9kL5gOxNM0zoGp" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Cargo.Run.executor": "Run",
+    "Cargo.Test water_http_utils.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.rust.reset.selective.auto.import": "true",
+    "last_opened_file_path": "P:/projects/rust/packages/water_http_utils",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "org.rust.cargo.project.model.PROJECT_DISCOVERY": "true",
+    "org.rust.cargo.project.model.impl.CargoExternalSystemProjectAware.subscribe.first.balloon": "",
+    "org.rust.first.attach.projects": "true"
+  }
+}]]></component>
+  <component name="RunManager" selected="Cargo.Run">
+    <configuration name="Run" type="CargoCommandRunConfiguration" factoryName="Cargo Command" nameIsGenerated="true">
+      <option name="command" value="run --bin water_http_utils --features server" />
+      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
+      <envs />
+      <option name="emulateTerminal" value="true" />
+      <option name="channel" value="DEFAULT" />
+      <option name="requiredFeatures" value="true" />
+      <option name="allFeatures" value="false" />
+      <option name="withSudo" value="false" />
+      <option name="buildTarget" value="REMOTE" />
+      <option name="backtrace" value="SHORT" />
+      <option name="isRedirectInput" value="false" />
+      <option name="redirectInputPath" value="" />
+      <method v="2">
+        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Test water_http_utils" type="CargoCommandRunConfiguration" factoryName="Cargo Command">
+      <option name="command" value="test --features server -- --nocapture " />
+      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
+      <envs />
+      <option name="emulateTerminal" value="true" />
+      <option name="channel" value="DEFAULT" />
+      <option name="requiredFeatures" value="true" />
+      <option name="allFeatures" value="false" />
+      <option name="withSudo" value="false" />
+      <option name="buildTarget" value="REMOTE" />
+      <option name="backtrace" value="SHORT" />
+      <option name="isRedirectInput" value="false" />
+      <option name="redirectInputPath" value="" />
+      <method v="2">
+        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
+      </method>
+    </configuration>
+    <list>
+      <item itemvalue="Cargo.Run" />
+      <item itemvalue="Cargo.Test water_http_utils" />
+    </list>
+  </component>
+  <component name="RustProjectSettings">
+    <option name="toolchainHomeDirectory" value="$USER_HOME$/.cargo/bin" />
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="289286b1-1b40-4c0a-b27b-23d2e47589e1" name="Changes" comment="" />
+      <created>1739826236007</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1739826236007</updated>
+      <workItem from="1739826237203" duration="231000" />
+      <workItem from="1739858448097" duration="688000" />
+      <workItem from="1739870035377" duration="7079000" />
+      <workItem from="1739890165089" duration="2522000" />
+      <workItem from="1739998857007" duration="2982000" />
+      <workItem from="1740046391517" duration="2815000" />
+      <workItem from="1740055847623" duration="868000" />
+      <workItem from="1740118954339" duration="1209000" />
+      <workItem from="1740298521611" duration="5557000" />
+      <workItem from="1740491114109" duration="803000" />
+      <workItem from="1740521497433" duration="958000" />
+      <workItem from="1740729730249" duration="24000" />
+      <workItem from="1741124648388" duration="3941000" />
+      <workItem from="1741242712168" duration="1491000" />
+      <workItem from="1741272960571" duration="875000" />
+      <workItem from="1741303115385" duration="2210000" />
+      <workItem from="1742616756737" duration="905000" />
+      <workItem from="1742797486997" duration="31000" />
+      <workItem from="1748734449000" duration="314000" />
+      <workItem from="1748950803731" duration="1233000" />
+      <workItem from="1750302328135" duration="2653000" />
+      <workItem from="1751524011501" duration="275000" />
+      <workItem from="1751542849124" duration="4247000" />
+      <workItem from="1751661104175" duration="424000" />
+      <workItem from="1751661760461" duration="634000" />
+      <workItem from="1751901359587" duration="147000" />
+      <workItem from="1752490165281" duration="1822000" />
+      <workItem from="1752542870792" duration="56000" />
+      <workItem from="1752543403917" duration="143000" />
+      <workItem from="1753695137559" duration="626000" />
+      <workItem from="1758092438632" duration="797000" />
+      <workItem from="1758096657105" duration="662000" />
+      <workItem from="1760350718317" duration="400000" />
+      <workItem from="1760366487260" duration="45000" />
+      <workItem from="1760389680869" duration="950000" />
+      <workItem from="1761517659947" duration="6000" />
+      <workItem from="1761792510391" duration="1535000" />
+      <workItem from="1761819245649" duration="125000" />
+      <workItem from="1764858022543" duration="2878000" />
+    </task>
+    <task id="LOCAL-00001" summary="change bytes to usize conversion">
+      <option name="closed" value="true" />
+      <created>1758093088538</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1758093088538</updated>
+    </task>
+    <task id="LOCAL-00002" summary="change bytes to usize conversion">
+      <option name="closed" value="true" />
+      <created>1761819286627</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1761819286627</updated>
+    </task>
+    <task id="LOCAL-00003" summary="change bytes to usize conversion">
+      <option name="closed" value="true" />
+      <created>1764858109572</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1764858109573</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="change bytes to usize conversion" />
+    <option name="LAST_COMMIT_MESSAGE" value="change bytes to usize conversion" />
+  </component>
+</project>
