@@ -115,62 +115,71 @@ impl<'buf,const HL:usize> HttpHeaders<'buf,HL>{
         let global_config = global_config();
 
         while current_pos < bytes.len() {
-            // 1. Safety check for header size
             if current_pos >= global_config.max_headers_size {
                 return Err(CreatingHeadersErrors::DangerousInvalidFormat);
             }
 
-            // 2. PEAK: Is this the end of headers?
-            // If the very next characters are \r\n, we found the empty line.
+            // --- THE CRITICAL FIX ---
+            // We check for \r\n at the START of a line.
+            // If we see it, it means we found the empty line between headers and body.
             if bytes[current_pos..].starts_with(b"\r\n") {
                 return Ok(HttpHeaders {
                     lines,
-                    headers_length: current_pos + 2, // Total length including the final \r\n
+                    headers_length: current_pos + 2, // Capture the final \r\n
                     content_length,
                 });
             }
 
-            // 3. Find Colon (Key)
+            // If it starts with just \n (some clients are non-compliant)
+            if bytes[current_pos..].starts_with(b"\n") {
+                return Ok(HttpHeaders {
+                    lines,
+                    headers_length: current_pos + 1,
+                    content_length,
+                });
+            }
+
+            // 3. Find the Colon (Key/Value separator)
             let colon_rel = memchr::memchr(b':', &bytes[current_pos..])
                 .ok_or(CreatingHeadersErrors::ReadMore)?;
             let key_end = current_pos + colon_rel;
             let key = &bytes[current_pos..key_end];
 
-            // 4. Find CRLF (Value)
+            // 4. Find the End of the Line (\r)
             let val_start = key_end + 1;
             let cr_rel = memchr::memchr(b'\r', &bytes[val_start..])
                 .ok_or(CreatingHeadersErrors::ReadMore)?;
             let val_end = val_start + cr_rel;
 
-            // Ensure \n follows \r
-            if val_end + 1 >= bytes.len() { return Err(CreatingHeadersErrors::ReadMore); }
-            if bytes[val_end + 1] != b'\n' { return Err(CreatingHeadersErrors::DangerousInvalidFormat); }
-
             let raw_value = &bytes[val_start..val_end];
-            let value = raw_value.trim_ascii(); // Handles optional leading space efficiently
+            let value = raw_value.trim_ascii();
 
-            // 5. Logic for specific headers (Content-Length)
+            // 5. Extraction Logic
             if key.len() == 14 && (key[0] | 32) == b'c' {
                 if key.eq_ignore_ascii_case(b"content-length") {
                     content_length = bytes_to_usize(value);
                 }
             }
 
-            // 6. Store header
             if lines_index < HL {
-                lines[lines_index].key = std::str::from_utf8(key).unwrap();
+                lines[lines_index].key = unsafe { std::str::from_utf8_unchecked(key) };
                 lines[lines_index].value = value.into();
                 lines_index += 1;
             }
 
-            // 7. JUMP to the start of the next line
-            // We land exactly at the start of the next potential key or the final \r\n
+            // 6. Move to next line
+            // We jump past the \r\n of the current header line
             current_pos = val_end + 2;
+
+            // Final safety check to prevent out of bounds on next loop iteration
+            if current_pos > bytes.len() && current_pos < bytes.len() + 2 {
+                // This happens if the buffer ends exactly at \r
+                return Err(CreatingHeadersErrors::ReadMore);
+            }
         }
 
         Err(CreatingHeadersErrors::ReadMore)
     }
-
     /// for getting specific header value based on header key
     pub fn get(&self,key:&str)->Option<&HeaderValue<'buf>>{
         for line in &self.lines {
