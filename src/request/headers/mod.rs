@@ -46,155 +46,155 @@ fn bytes_to_usize(bytes: &[u8]) -> Option<usize> {
 
 impl<'buf,const HL:usize> HttpHeaders<'buf,HL>{
     /// creating new HttpHeaders from incoming bytes
-    // pub (crate) fn new(bytes:&'buf[u8])->Result<HttpHeaders<'buf,HL>,CreatingHeadersErrors>{
-    //     let mut lines = [HeaderLine::empty();HL];
-    //     let mut lines_index =0_usize;
-    //     let total_length = bytes.len();
-    //     let global_config = global_config();
-    //     let mut end_indicator  = 0_u8;
-    //     let mut last_index = 0_usize;
-    //     let mut key = None;
-    //     let mut content_length = None;
-    //     for (index,byte) in bytes.iter().enumerate() {
-    //         if index >= global_config.max_headers_size { return CreatingHeadersErrors::DangerousInvalidFormat.into();}
-    //
-    //         match byte {
-    //             &b':' => {
-    //                 if key.is_some() {continue;}
-    //                 key = Some(&bytes[last_index..index]);
-    //                 try_forward!(index+2,last_index,total_length);
-    //             }
-    //
-    //             &b'\r' => {
-    //                 end_indicator+=1;
-    //                 if let Some(k) = key {
-    //                     match k {
-    //                         b"Content-Length"=>{content_length = bytes_to_usize(&bytes[last_index..index])}
-    //                         b"content-length"=>{content_length = bytes_to_usize(&bytes[last_index..index])}
-    //                         _ =>{}
-    //                     }
-    //                     let line = lines.get_mut(lines_index);
-    //                     if let Some(line) = line {
-    //                         line.key = std::str::from_utf8(k).unwrap();
-    //                         line.value = (&bytes[last_index..index]).into();
-    //                     }
-    //                     key = None;
-    //                     lines_index +=1;
-    //                 }
-    //                 try_forward!(index,last_index,total_length);
-    //             }
-    //             &b'\n' => {
-    //                 end_indicator+=1;
-    //                 if end_indicator >= 4 {
-    //                     return Ok(
-    //                         HttpHeaders {
-    //                             lines,
-    //                             headers_length:index,
-    //                             content_length
-    //                         }
-    //                     )
-    //                 }
-    //                 else if index+1  >= bytes.len() { return CreatingHeadersErrors::ReadMore.into()}
-    //                 last_index=index + 1;
-    //             }
-    //             _ => {
-    //                 end_indicator = 0;
-    //             }
-    //         }
-    //     }
-    //
-    //     Err(CreatingHeadersErrors::ReadMore)
-    // }
-
-
-    pub (crate) fn new(bytes: &'buf [u8]) -> Result<HttpHeaders<'buf, HL>, CreatingHeadersErrors> {
-        let mut lines = [HeaderLine::empty(); HL];
-        let mut lines_index = 0_usize;
-        let mut current_pos = 0_usize;
-        let mut content_length = None;
+    pub (crate) fn new(bytes:&'buf[u8])->Result<HttpHeaders<'buf,HL>,CreatingHeadersErrors>{
+        let mut lines = [HeaderLine::empty();HL];
+        let mut lines_index =0_usize;
+        let total_length = bytes.len();
         let global_config = global_config();
-        let len = bytes.len();
+        let mut end_indicator  = 0_u8;
+        let mut last_index = 0_usize;
+        let mut key = None;
+        let mut content_length = None;
+        for (index,byte) in bytes.iter().enumerate() {
+            if index >= global_config.max_headers_size { return CreatingHeadersErrors::DangerousInvalidFormat.into();}
 
-        while current_pos < len {
-            // 1. Safety limit check
-            if current_pos >= global_config.max_headers_size {
-                return Err(CreatingHeadersErrors::DangerousInvalidFormat);
-            }
-
-            let remaining = &bytes[current_pos..];
-            let r_len = remaining.len();
-
-            // 2. PEAK: End of headers check (\r\n or \n)
-            // We use read_unaligned to prevent the alignment panic you saw
-            if r_len >= 2 {
-                let peek = unsafe { (remaining.as_ptr() as *const u16).read_unaligned() };
-                if peek == 0x0A0D { // Little-endian for \r\n
-                    return Ok(HttpHeaders {
-                        lines,
-                        headers_length: current_pos + 2,
-                        content_length,
-                    });
+            match byte {
+                &b':' => {
+                    if key.is_some() {continue;}
+                    key = Some(&bytes[last_index..index]);
+                    try_forward!(index+2,last_index,total_length);
                 }
-            }
 
-            // Non-compliant/Unix line ending check
-            if r_len >= 1 && remaining[0] == b'\n' {
-                return Ok(HttpHeaders {
-                    lines,
-                    headers_length: current_pos + 1,
-                    content_length,
-                });
-            }
-
-            // 3. SEARCH: Find Colon and Newline in one SIMD pass
-            // This is much faster than searching twice.
-            let colon_pos = match memchr::memchr2(b':', b'\n', remaining) {
-                Some(i) if remaining[i] == b':' => i,
-                _ => return Err(CreatingHeadersErrors::ReadMore),
-            };
-
-            let key = &remaining[..colon_pos];
-            let after_colon = &remaining[colon_pos + 1..];
-
-            // 4. Find Line End (LF)
-            let lf_pos = match memchr::memchr(b'\n', after_colon) {
-                Some(i) => i,
-                None => return Err(CreatingHeadersErrors::ReadMore),
-            };
-
-            let raw_value = &after_colon[..lf_pos];
-            let value = raw_value.trim_ascii();
-
-            // 5. CONTENT-LENGTH: Fast-Path 8-byte check
-            // Check for "content-" in one CPU cycle
-            if key.len() == 14 {
-                // "content-" in little-endian ASCII with case-insensitivity mask
-                const CONTENT_MASK: u64 = 0x2d746e65746e6f63;
-                let first_8 = unsafe { (key.as_ptr() as *const u64).read_unaligned() };
-
-                if (first_8 | 0x2020202020202020) == CONTENT_MASK {
-                    if key.eq_ignore_ascii_case(b"content-length") {
-                        content_length = bytes_to_usize(value);
+                &b'\r' => {
+                    end_indicator+=1;
+                    if let Some(k) = key {
+                        match k {
+                            b"Content-Length"=>{content_length = bytes_to_usize(&bytes[last_index..index])}
+                            b"content-length"=>{content_length = bytes_to_usize(&bytes[last_index..index])}
+                            _ =>{}
+                        }
+                        let line = lines.get_mut(lines_index);
+                        if let Some(line) = line {
+                            line.key = std::str::from_utf8(k).unwrap();
+                            line.value = (&bytes[last_index..index]).into();
+                        }
+                        key = None;
+                        lines_index +=1;
                     }
+                    try_forward!(index,last_index,total_length);
+                }
+                &b'\n' => {
+                    end_indicator+=1;
+                    if end_indicator >= 4 {
+                        return Ok(
+                            HttpHeaders {
+                                lines,
+                                headers_length:index,
+                                content_length
+                            }
+                        )
+                    }
+                    else if index+1  >= bytes.len() { return CreatingHeadersErrors::ReadMore.into()}
+                    last_index=index + 1;
+                }
+                _ => {
+                    end_indicator = 0;
                 }
             }
-
-            // 6. STORE: Zero-bounds-check write
-            if lines_index < HL {
-                unsafe {
-                    let line = lines.get_unchecked_mut(lines_index);
-                    line.key = std::str::from_utf8_unchecked(key);
-                    line.value = value.into();
-                }
-                lines_index += 1;
-            }
-
-            // 7. JUMP: Move position past the \n
-            current_pos += colon_pos + 1 + lf_pos + 1;
         }
 
         Err(CreatingHeadersErrors::ReadMore)
-    }    /// for getting specific header value based on header key
+    }
+
+    //
+    // pub (crate) fn new(bytes: &'buf [u8]) -> Result<HttpHeaders<'buf, HL>, CreatingHeadersErrors> {
+    //     let mut lines = [HeaderLine::empty(); HL];
+    //     let mut lines_index = 0_usize;
+    //     let mut current_pos = 0_usize;
+    //     let mut content_length = None;
+    //     let global_config = global_config();
+    //     let len = bytes.len();
+    //
+    //     while current_pos < len {
+    //         // 1. Safety limit check
+    //         if current_pos >= global_config.max_headers_size {
+    //             return Err(CreatingHeadersErrors::DangerousInvalidFormat);
+    //         }
+    //
+    //         let remaining = &bytes[current_pos..];
+    //         let r_len = remaining.len();
+    //
+    //         // 2. PEAK: End of headers check (\r\n or \n)
+    //         // We use read_unaligned to prevent the alignment panic you saw
+    //         if r_len >= 2 {
+    //             let peek = unsafe { (remaining.as_ptr() as *const u16).read_unaligned() };
+    //             if peek == 0x0A0D { // Little-endian for \r\n
+    //                 return Ok(HttpHeaders {
+    //                     lines,
+    //                     headers_length: current_pos + 2,
+    //                     content_length,
+    //                 });
+    //             }
+    //         }
+    //
+    //         // Non-compliant/Unix line ending check
+    //         if r_len >= 1 && remaining[0] == b'\n' {
+    //             return Ok(HttpHeaders {
+    //                 lines,
+    //                 headers_length: current_pos + 1,
+    //                 content_length,
+    //             });
+    //         }
+    //
+    //         // 3. SEARCH: Find Colon and Newline in one SIMD pass
+    //         // This is much faster than searching twice.
+    //         let colon_pos = match memchr::memchr2(b':', b'\n', remaining) {
+    //             Some(i) if remaining[i] == b':' => i,
+    //             _ => return Err(CreatingHeadersErrors::ReadMore),
+    //         };
+    //
+    //         let key = &remaining[..colon_pos];
+    //         let after_colon = &remaining[colon_pos + 1..];
+    //
+    //         // 4. Find Line End (LF)
+    //         let lf_pos = match memchr::memchr(b'\n', after_colon) {
+    //             Some(i) => i,
+    //             None => return Err(CreatingHeadersErrors::ReadMore),
+    //         };
+    //
+    //         let raw_value = &after_colon[..lf_pos];
+    //         let value = raw_value.trim_ascii();
+    //
+    //         // 5. CONTENT-LENGTH: Fast-Path 8-byte check
+    //         // Check for "content-" in one CPU cycle
+    //         if key.len() == 14 {
+    //             // "content-" in little-endian ASCII with case-insensitivity mask
+    //             const CONTENT_MASK: u64 = 0x2d746e65746e6f63;
+    //             let first_8 = unsafe { (key.as_ptr() as *const u64).read_unaligned() };
+    //
+    //             if (first_8 | 0x2020202020202020) == CONTENT_MASK {
+    //                 if key.eq_ignore_ascii_case(b"content-length") {
+    //                     content_length = bytes_to_usize(value);
+    //                 }
+    //             }
+    //         }
+    //
+    //         // 6. STORE: Zero-bounds-check write
+    //         if lines_index < HL {
+    //             unsafe {
+    //                 let line = lines.get_unchecked_mut(lines_index);
+    //                 line.key = std::str::from_utf8_unchecked(key);
+    //                 line.value = value.into();
+    //             }
+    //             lines_index += 1;
+    //         }
+    //
+    //         // 7. JUMP: Move position past the \n
+    //         current_pos += colon_pos + 1 + lf_pos + 1;
+    //     }
+    //
+    //     Err(CreatingHeadersErrors::ReadMore)
+    // }    /// for getting specific header value based on header key
     pub fn get(&self,key:&str)->Option<&HeaderValue<'buf>>{
         for line in &self.lines {
             if line.key == key {

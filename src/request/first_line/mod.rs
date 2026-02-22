@@ -28,7 +28,6 @@ pub struct  HttpFirstLine<'buf>{
 
 impl <'buf> HttpFirstLine<'buf> {
 
-    #[allow(unused)]
     #[cfg(feature = "server")]
     #[inline]
     pub (crate) fn from_server(bytes:&'buf[u8]) -> Result<HttpFirstLine<'buf>,CreatingRequestErrors>{
@@ -93,61 +92,61 @@ impl <'buf> HttpFirstLine<'buf> {
         CreatingRequestErrors::InsufficientDataSoReadMore.into()
     }
 
-    #[cfg(feature = "server")]
-    #[inline]
-    pub (crate) fn from_server_simd(bytes: &'buf [u8]) -> Result<HttpFirstLine<'buf>, CreatingRequestErrors> {
-        let total_length = bytes.len();
-        let global_conf = global_config();
-
-        // 1. Find Method (First Space)
-        let method_end = memchr::memchr(b' ', bytes)
-            .ok_or(CreatingRequestErrors::InsufficientDataSoReadMore)?;
-
-        if method_end >= global_conf.max_method_size {
-            return Err(CreatingRequestErrors::InvalidHttpFormat);
-        }
-        let method = &bytes[..method_end];
-
-        // 2. Find Path (Second Space)
-        let path_start = method_end + 1;
-        if path_start >= total_length { return Err(CreatingRequestErrors::InsufficientDataSoReadMore); }
-
-        let path_end = memchr::memchr(b' ', &bytes[path_start..])
-            .map(|i| i + path_start)
-            .ok_or(CreatingRequestErrors::InsufficientDataSoReadMore)?;
-
-        if (path_end - path_start) >= global_conf.max_path_size {
-            return Err(CreatingRequestErrors::DangerousInvalidHttpFormat);
-        }
-        let path = &bytes[path_start..path_end];
-
-        // 3. Find Version (Ending in \r\n)
-        let version_start = path_end + 1;
-        if version_start >= total_length { return Err(CreatingRequestErrors::InsufficientDataSoReadMore); }
-
-        let cr_index = memchr::memchr(b'\r', &bytes[version_start..])
-            .map(|i| i + version_start)
-            .ok_or(CreatingRequestErrors::InsufficientDataSoReadMore)?;
-
-        if (cr_index - version_start) >= global_conf.max_version_size {
-            return Err(CreatingRequestErrors::DangerousInvalidHttpFormat);
-        }
-
-        if cr_index + 1 >= total_length { return Err(CreatingRequestErrors::InsufficientDataSoReadMore); }
-        if bytes[cr_index + 1] != b'\n' { return Err(CreatingRequestErrors::InvalidHttpFormat); }
-
-        let version = &bytes[version_start..cr_index];
-        let first_line_length = cr_index + 2;
-
-        // Final conversion
-        let method_str = std::str::from_utf8(method).map_err(|_| CreatingRequestErrors::InvalidHttpFormat)?;
-        let version_str = std::str::from_utf8(version).map_err(|_| CreatingRequestErrors::InvalidHttpFormat)?;
-
-        Ok(HttpFirstLine {
-            method: method_str,
-            version: version_str,
-            path: HttpPath::new(path),
-            first_line_length,
-        })
-    }
+    // #[cfg(feature = "server")]
+    // #[inline]
+    // pub (crate) fn from_server(bytes: &'buf [u8]) -> Result<HttpFirstLine<'buf>, CreatingRequestErrors> {
+    //     let total_length = bytes.len();
+    //     let global_conf = global_config();
+    //
+    //     // 1. Find Method (First Space)
+    //     let method_end = memchr::memchr(b' ', bytes)
+    //         .ok_or(CreatingRequestErrors::InsufficientDataSoReadMore)?;
+    //
+    //     if method_end >= global_conf.max_method_size {
+    //         return Err(CreatingRequestErrors::InvalidHttpFormat);
+    //     }
+    //     let method = &bytes[..method_end];
+    //
+    //     // 2. Find Path (Second Space)
+    //     let path_start = method_end + 1;
+    //     if path_start >= total_length { return Err(CreatingRequestErrors::InsufficientDataSoReadMore); }
+    //
+    //     let path_end = memchr::memchr(b' ', &bytes[path_start..])
+    //         .map(|i| i + path_start)
+    //         .ok_or(CreatingRequestErrors::InsufficientDataSoReadMore)?;
+    //
+    //     if (path_end - path_start) >= global_conf.max_path_size {
+    //         return Err(CreatingRequestErrors::DangerousInvalidHttpFormat);
+    //     }
+    //     let path = &bytes[path_start..path_end];
+    //
+    //     // 3. Find Version (Ending in \r\n)
+    //     let version_start = path_end + 1;
+    //     if version_start >= total_length { return Err(CreatingRequestErrors::InsufficientDataSoReadMore); }
+    //
+    //     let cr_index = memchr::memchr(b'\r', &bytes[version_start..])
+    //         .map(|i| i + version_start)
+    //         .ok_or(CreatingRequestErrors::InsufficientDataSoReadMore)?;
+    //
+    //     if (cr_index - version_start) >= global_conf.max_version_size {
+    //         return Err(CreatingRequestErrors::DangerousInvalidHttpFormat);
+    //     }
+    //
+    //     if cr_index + 1 >= total_length { return Err(CreatingRequestErrors::InsufficientDataSoReadMore); }
+    //     if bytes[cr_index + 1] != b'\n' { return Err(CreatingRequestErrors::InvalidHttpFormat); }
+    //
+    //     let version = &bytes[version_start..cr_index];
+    //     let first_line_length = cr_index + 2;
+    //
+    //     // Final conversion
+    //     let method_str = std::str::from_utf8(method).map_err(|_| CreatingRequestErrors::InvalidHttpFormat)?;
+    //     let version_str = std::str::from_utf8(version).map_err(|_| CreatingRequestErrors::InvalidHttpFormat)?;
+    //
+    //     Ok(HttpFirstLine {
+    //         method: method_str,
+    //         version: version_str,
+    //         path: HttpPath::new(path),
+    //         first_line_length,
+    //     })
+    // }
 }

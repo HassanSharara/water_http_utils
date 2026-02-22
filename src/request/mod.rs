@@ -76,7 +76,7 @@ impl<'buf,const HC:usize> HttpRequest<'buf, HC> {
             }
             match step {
                 CreatingRequestSteps::FirstLine => {
-                    let fl = HttpFirstLine::from_server_simd(bytes)?;
+                    let fl = HttpFirstLine::from_server(bytes)?;
                     let index:usize = fl.first_line_length-1;
                     first_line = Some(fl);
                     #[cfg(feature = "write_logs")]
@@ -138,9 +138,9 @@ impl<'buf,const HC:usize> HttpRequest<'buf, HC> {
 
     pub fn from_bytes<const N:usize>(bytes:&'buf [u8])->Result<HttpRequest<'buf,N>,CreatingRequestErrors>{
 
-        let first_line = HttpFirstLine::from_server_simd(bytes)?;
+        let first_line = HttpFirstLine::from_server(bytes)?;
 
-        let headers = HttpHeaders::<N>::new(&bytes[first_line.first_line_length..])?;
+        let headers = HttpHeaders::<N>::new(&bytes[first_line.first_line_length-1..])?;
 
         Ok(
             HttpRequest {
@@ -241,7 +241,7 @@ impl<'buf> HttpPath<'buf> {
 
 
 
-#[cfg(all(feature = "server",test))]
+#[cfg(test)]
 mod test {
     use crate::request::HttpRequest;
 
