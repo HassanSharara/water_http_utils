@@ -46,61 +46,120 @@ fn bytes_to_usize(bytes: &[u8]) -> Option<usize> {
 
 impl<'buf,const HL:usize> HttpHeaders<'buf,HL>{
     /// creating new HttpHeaders from incoming bytes
-    pub (crate) fn new(bytes:&'buf[u8])->Result<HttpHeaders<'buf,HL>,CreatingHeadersErrors>{
-        let mut lines = [HeaderLine::empty();HL];
-        let mut lines_index =0_usize;
-        let total_length = bytes.len();
-        let global_config = global_config();
-        let mut end_indicator  = 0_u8;
-        let mut last_index = 0_usize;
-        let mut key = None;
+    // pub (crate) fn new(bytes:&'buf[u8])->Result<HttpHeaders<'buf,HL>,CreatingHeadersErrors>{
+    //     let mut lines = [HeaderLine::empty();HL];
+    //     let mut lines_index =0_usize;
+    //     let total_length = bytes.len();
+    //     let global_config = global_config();
+    //     let mut end_indicator  = 0_u8;
+    //     let mut last_index = 0_usize;
+    //     let mut key = None;
+    //     let mut content_length = None;
+    //     for (index,byte) in bytes.iter().enumerate() {
+    //         if index >= global_config.max_headers_size { return CreatingHeadersErrors::DangerousInvalidFormat.into();}
+    //
+    //         match byte {
+    //             &b':' => {
+    //                 if key.is_some() {continue;}
+    //                 key = Some(&bytes[last_index..index]);
+    //                 try_forward!(index+2,last_index,total_length);
+    //             }
+    //
+    //             &b'\r' => {
+    //                 end_indicator+=1;
+    //                 if let Some(k) = key {
+    //                     match k {
+    //                         b"Content-Length"=>{content_length = bytes_to_usize(&bytes[last_index..index])}
+    //                         b"content-length"=>{content_length = bytes_to_usize(&bytes[last_index..index])}
+    //                         _ =>{}
+    //                     }
+    //                     let line = lines.get_mut(lines_index);
+    //                     if let Some(line) = line {
+    //                         line.key = std::str::from_utf8(k).unwrap();
+    //                         line.value = (&bytes[last_index..index]).into();
+    //                     }
+    //                     key = None;
+    //                     lines_index +=1;
+    //                 }
+    //                 try_forward!(index,last_index,total_length);
+    //             }
+    //             &b'\n' => {
+    //                 end_indicator+=1;
+    //                 if end_indicator >= 4 {
+    //                     return Ok(
+    //                         HttpHeaders {
+    //                             lines,
+    //                             headers_length:index,
+    //                             content_length
+    //                         }
+    //                     )
+    //                 }
+    //                 else if index+1  >= bytes.len() { return CreatingHeadersErrors::ReadMore.into()}
+    //                 last_index=index + 1;
+    //             }
+    //             _ => {
+    //                 end_indicator = 0;
+    //             }
+    //         }
+    //     }
+    //
+    //     Err(CreatingHeadersErrors::ReadMore)
+    // }
+
+
+    pub (crate) fn new(bytes: &'buf [u8]) -> Result<HttpHeaders<'buf, HL>, CreatingHeadersErrors> {
+        let mut lines = [HeaderLine::empty(); HL];
+        let mut lines_index = 0_usize;
+        let mut current_pos = 0_usize;
         let mut content_length = None;
-        for (index,byte) in bytes.iter().enumerate() {
-            if index >= global_config.max_headers_size { return CreatingHeadersErrors::DangerousInvalidFormat.into();}
+        let global_config = global_config();
 
-            match byte {
-                &b':' => {
-                    if key.is_some() {continue;}
-                    key = Some(&bytes[last_index..index]);
-                    try_forward!(index+2,last_index,total_length);
-                }
+        // Loop through each header line
+        while current_pos < bytes.len() {
+            if current_pos >= global_config.max_headers_size {
+                return Err(CreatingHeadersErrors::DangerousInvalidFormat);
+            }
 
-                &b'\r' => {
-                    end_indicator+=1;
-                    if let Some(k) = key {
-                        match k {
-                            b"Content-Length"=>{content_length = bytes_to_usize(&bytes[last_index..index])}
-                            b"content-length"=>{content_length = bytes_to_usize(&bytes[last_index..index])}
-                            _ =>{}
-                        }
-                        let line = lines.get_mut(lines_index);
-                        if let Some(line) = line {
-                            line.key = std::str::from_utf8(k).unwrap();
-                            line.value = (&bytes[last_index..index]).into();
-                        }
-                        key = None;
-                        lines_index +=1;
-                    }
-                    try_forward!(index,last_index,total_length);
-                }
-                &b'\n' => {
-                    end_indicator+=1;
-                    if end_indicator >= 4 {
-                        return Ok(
-                            HttpHeaders {
-                                lines,
-                                headers_length:index,
-                                content_length
-                            }
-                        )
-                    }
-                    else if index+1  >= bytes.len() { return CreatingHeadersErrors::ReadMore.into()}
-                    last_index=index + 1;
-                }
-                _ => {
-                    end_indicator = 0;
+            // 1. Check for the final \r\n (End of Headers)
+            if bytes[current_pos..].starts_with(b"\r\n") {
+                return Ok(HttpHeaders {
+                    lines,
+                    headers_length: current_pos + 2,
+                    content_length,
+                });
+            }
+
+            // 2. Find the Colon ':' using SIMD (memchr)
+            let colon_rel = memchr::memchr(b':', &bytes[current_pos..])
+                .ok_or(CreatingHeadersErrors::ReadMore)?;
+            let key_end = current_pos + colon_rel;
+            let key = &bytes[current_pos..key_end];
+
+            // 3. Find the Newline '\r' for the value
+            let val_start = key_end + 1; // Basic skip, you might need +2 for ': '
+            let cr_rel = memchr::memchr(b'\r', &bytes[val_start..])
+                .ok_or(CreatingHeadersErrors::ReadMore)?;
+            let val_end = val_start + cr_rel;
+            let value = &bytes[val_start..val_end];
+
+            // 4. Content-Length Optimization
+            // Check first letter 'c'/'C' to avoid full string comparison for every header
+            if key.len() == 14 && (key[0] == b'c' || key[0] == b'C') {
+                if key.eq_ignore_ascii_case(b"content-length") {
+                    content_length = bytes_to_usize(value.trim_ascii());
                 }
             }
+
+            // 5. Store in static-sized array
+            if lines_index < HL {
+                lines[lines_index].key = std::str::from_utf8(key).unwrap();
+                lines[lines_index].value = value.into();
+                lines_index += 1;
+            }
+
+            // 6. Jump to start of next line (skipping \r\n)
+            current_pos = val_end + 2;
+            if current_pos > bytes.len() { return Err(CreatingHeadersErrors::ReadMore); }
         }
 
         Err(CreatingHeadersErrors::ReadMore)

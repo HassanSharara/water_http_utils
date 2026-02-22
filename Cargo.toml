@@ -1,9 +1,10 @@
 [package]
 name = "water_http_utils"
-version = "0.2.2-beta.1"
+version = "0.2.2-beta.2"
 edition = "2021"
 license = "MIT"
 homepage = "https://github.com/HassanSharara"
+repository = "https://github.com/HassanSharara/water_http_utils"
 categories = ["network-programming", "web-programming::http-server" ]
 keywords = ["http", "water_http", "water-http","water-server"]
 description = "fast and efficient http utils for building structured http frameworks"
