@@ -479,9 +479,10 @@ dependencies = [
 
 [[package]]
 name = "water_http_utils"
-version = "0.2.1"
+version = "0.2.2-beta.1"
 dependencies = [
  "chrono",
+ "memchr",
  "serde",
  "serde_json",
  "tokio",
