@@ -104,9 +104,8 @@ impl <'buf> HttpFirstLine<'buf> {
         if len < 12 { return Err(CreatingRequestErrors::InsufficientDataSoReadMore); }
 
         let (method_len, method_end_ptr) = unsafe {
-            let first_8 = *(base_ptr as *const u64);
-
-            // Use bitmasking to find the space (0x20) in the first 8 bytes
+            let first_8 = unsafe { (base_ptr as *const u64).read_unaligned() };
+            // Use bitmask to find the space (0x20) in the first 8 bytes
             if (first_8 & 0xFFFFFF) == 0x20544547 { // "GET "
                 (3, base_ptr.add(3))
             } else if (first_8 & 0xFFFFFFFFFF) == 0x2054534f50 { // "POST "

@@ -8,13 +8,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="289286b1-1b40-4c0a-b27b-23d2e47589e1" name="Changes" comment="adding from bytes simd">
-      <change afterPath="$PROJECT_DIR$/benches/parser_becnh.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/request/first_line/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/request/first_line/mod.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/request/headers/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/request/headers/mod.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/request/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/request/mod.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -113,8 +107,8 @@
     </configuration>
     <list>
       <item itemvalue="Cargo.Run" />
-      <item itemvalue="Cargo.Test water_http_utils" />
       <item itemvalue="Cargo.Test request::test" />
+      <item itemvalue="Cargo.Test water_http_utils" />
     </list>
     <recent_temporary>
       <list>
@@ -175,7 +169,8 @@
       <workItem from="1764861340752" duration="277000" />
       <workItem from="1764930532520" duration="488000" />
       <workItem from="1771720062272" duration="4532000" />
-      <workItem from="1771755555874" duration="2764000" />
+      <workItem from="1771755555874" duration="5186000" />
+      <workItem from="1771763349367" duration="10000" />
     </task>
     <task id="LOCAL-00001" summary="change bytes to usize conversion">
       <option name="closed" value="true" />
@@ -265,7 +260,15 @@
       <option name="project" value="LOCAL" />
       <updated>1771725369564</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="adding from bytes simd">
+      <option name="closed" value="true" />
+      <created>1771759133555</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1771759133555</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
