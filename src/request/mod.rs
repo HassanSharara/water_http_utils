@@ -140,7 +140,7 @@ impl<'buf,const HC:usize> HttpRequest<'buf, HC> {
 
         let first_line = HttpFirstLine::from_server_simd(bytes)?;
 
-        let headers = HttpHeaders::<N>::new(&bytes[first_line.first_line_length-1..])?;
+        let headers = HttpHeaders::<N>::new(&bytes[first_line.first_line_length..])?;
 
         Ok(
             HttpRequest {
