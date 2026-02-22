@@ -119,19 +119,23 @@ impl<'buf,const HL:usize> HttpHeaders<'buf,HL>{
                 return Err(CreatingHeadersErrors::DangerousInvalidFormat);
             }
 
-            // --- THE CRITICAL FIX ---
-            // We check for \r\n at the START of a line.
-            // If we see it, it means we found the empty line between headers and body.
-            if bytes[current_pos..].starts_with(b"\r\n") {
+            let remaining = &bytes[current_pos..];
+
+            // --- IMPROVED END OF HEADERS CHECK ---
+            if remaining.starts_with(b"\r\n") {
                 return Ok(HttpHeaders {
                     lines,
-                    headers_length: current_pos + 2, // Capture the final \r\n
+                    headers_length: current_pos + 2,
                     content_length,
                 });
             }
 
-            // If it starts with just \n (some clients are non-compliant)
-            if bytes[current_pos..].starts_with(b"\n") {
+            // Handle split buffer: if we only have "\r" at the very end
+            if remaining == b"\r" {
+                return Err(CreatingHeadersErrors::ReadMore);
+            }
+
+            if remaining.starts_with(b"\n") {
                 return Ok(HttpHeaders {
                     lines,
                     headers_length: current_pos + 1,
@@ -139,20 +143,21 @@ impl<'buf,const HL:usize> HttpHeaders<'buf,HL>{
                 });
             }
 
-            // 3. Find the Colon (Key/Value separator)
-            let colon_rel = memchr::memchr(b':', &bytes[current_pos..])
+            // --- HEADER PARSING ---
+            // 3. Find Colon
+            let colon_rel = memchr::memchr(b':', remaining)
                 .ok_or(CreatingHeadersErrors::ReadMore)?;
-            let key_end = current_pos + colon_rel;
-            let key = &bytes[current_pos..key_end];
+            let key = &remaining[..colon_rel];
 
-            // 4. Find the End of the Line (\r)
-            let val_start = key_end + 1;
-            let cr_rel = memchr::memchr(b'\r', &bytes[val_start..])
+            // 4. Find Line End
+            // We look for \n instead of \r to be more robust to \r\n vs \n
+            let line_end_rel = memchr::memchr(b'\n', &remaining[colon_rel..])
+                .map(|i| i + colon_rel)
                 .ok_or(CreatingHeadersErrors::ReadMore)?;
-            let val_end = val_start + cr_rel;
 
-            let raw_value = &bytes[val_start..val_end];
-            let value = raw_value.trim_ascii();
+            // Capture the value. We handle both \r\n and \n by trimming.
+            let val_payload = &remaining[colon_rel + 1..line_end_rel];
+            let value = val_payload.trim_ascii();
 
             // 5. Extraction Logic
             if key.len() == 14 && (key[0] | 32) == b'c' {
@@ -167,17 +172,11 @@ impl<'buf,const HL:usize> HttpHeaders<'buf,HL>{
                 lines_index += 1;
             }
 
-            // 6. Move to next line
-            // We jump past the \r\n of the current header line
-            current_pos = val_end + 2;
-
-            // Final safety check to prevent out of bounds on next loop iteration
-            if current_pos > bytes.len() && current_pos < bytes.len() + 2 {
-                // This happens if the buffer ends exactly at \r
-                return Err(CreatingHeadersErrors::ReadMore);
-            }
+            // 6. JUMP - Move to the character immediately AFTER the \n
+            current_pos += line_end_rel + 1;
         }
 
+        // If we exit the loop without hitting an empty line, we haven't finished the headers
         Err(CreatingHeadersErrors::ReadMore)
     }
     /// for getting specific header value based on header key
