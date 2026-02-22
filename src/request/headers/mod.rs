@@ -114,52 +114,58 @@ impl<'buf,const HL:usize> HttpHeaders<'buf,HL>{
         let mut content_length = None;
         let global_config = global_config();
 
-        // Loop through each header line
         while current_pos < bytes.len() {
+            // 1. Safety check for header size
             if current_pos >= global_config.max_headers_size {
                 return Err(CreatingHeadersErrors::DangerousInvalidFormat);
             }
 
-            // 1. Check for the final \r\n (End of Headers)
+            // 2. PEAK: Is this the end of headers?
+            // If the very next characters are \r\n, we found the empty line.
             if bytes[current_pos..].starts_with(b"\r\n") {
                 return Ok(HttpHeaders {
                     lines,
-                    headers_length: current_pos + 2,
+                    headers_length: current_pos + 2, // Total length including the final \r\n
                     content_length,
                 });
             }
 
-            // 2. Find the Colon ':' using SIMD (memchr)
+            // 3. Find Colon (Key)
             let colon_rel = memchr::memchr(b':', &bytes[current_pos..])
                 .ok_or(CreatingHeadersErrors::ReadMore)?;
             let key_end = current_pos + colon_rel;
             let key = &bytes[current_pos..key_end];
 
-            // 3. Find the Newline '\r' for the value
-            let val_start = key_end + 1; // Basic skip, you might need +2 for ': '
+            // 4. Find CRLF (Value)
+            let val_start = key_end + 1;
             let cr_rel = memchr::memchr(b'\r', &bytes[val_start..])
                 .ok_or(CreatingHeadersErrors::ReadMore)?;
             let val_end = val_start + cr_rel;
-            let value = &bytes[val_start..val_end];
 
-            // 4. Content-Length Optimization
-            // Check first letter 'c'/'C' to avoid full string comparison for every header
-            if key.len() == 14 && (key[0] == b'c' || key[0] == b'C') {
+            // Ensure \n follows \r
+            if val_end + 1 >= bytes.len() { return Err(CreatingHeadersErrors::ReadMore); }
+            if bytes[val_end + 1] != b'\n' { return Err(CreatingHeadersErrors::DangerousInvalidFormat); }
+
+            let raw_value = &bytes[val_start..val_end];
+            let value = raw_value.trim_ascii(); // Handles optional leading space efficiently
+
+            // 5. Logic for specific headers (Content-Length)
+            if key.len() == 14 && (key[0] | 32) == b'c' {
                 if key.eq_ignore_ascii_case(b"content-length") {
-                    content_length = bytes_to_usize(value.trim_ascii());
+                    content_length = bytes_to_usize(value);
                 }
             }
 
-            // 5. Store in static-sized array
+            // 6. Store header
             if lines_index < HL {
                 lines[lines_index].key = std::str::from_utf8(key).unwrap();
                 lines[lines_index].value = value.into();
                 lines_index += 1;
             }
 
-            // 6. Jump to start of next line (skipping \r\n)
+            // 7. JUMP to the start of the next line
+            // We land exactly at the start of the next potential key or the final \r\n
             current_pos = val_end + 2;
-            if current_pos > bytes.len() { return Err(CreatingHeadersErrors::ReadMore); }
         }
 
         Err(CreatingHeadersErrors::ReadMore)

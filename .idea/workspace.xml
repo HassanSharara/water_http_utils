@@ -7,13 +7,9 @@
     <cargoProject FILE="$PROJECT_DIR$/Cargo.toml" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="289286b1-1b40-4c0a-b27b-23d2e47589e1" name="Changes" comment="change bytes to usize conversion">
-      <change beforePath="$PROJECT_DIR$/.idea/material_theme_project_new.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/material_theme_project_new.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.lock" afterDir="false" />
+    <list default="true" id="289286b1-1b40-4c0a-b27b-23d2e47589e1" name="Changes" comment="adding from bytes simd">
       <change beforePath="$PROJECT_DIR$/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/request/first_line/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/request/first_line/mod.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/request/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/request/mod.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/request/headers/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/request/headers/mod.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -173,7 +169,7 @@
       <workItem from="1764858022543" duration="2878000" />
       <workItem from="1764861340752" duration="277000" />
       <workItem from="1764930532520" duration="488000" />
-      <workItem from="1771720062272" duration="373000" />
+      <workItem from="1771720062272" duration="735000" />
     </task>
     <task id="LOCAL-00001" summary="change bytes to usize conversion">
       <option name="closed" value="true" />
@@ -199,7 +195,15 @@
       <option name="project" value="LOCAL" />
       <updated>1764858109573</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="adding from bytes simd">
+      <option name="closed" value="true" />
+      <created>1771720454463</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1771720454463</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -207,6 +211,7 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="change bytes to usize conversion" />
-    <option name="LAST_COMMIT_MESSAGE" value="change bytes to usize conversion" />
+    <MESSAGE value="adding from bytes simd" />
+    <option name="LAST_COMMIT_MESSAGE" value="adding from bytes simd" />
   </component>
 </project>
