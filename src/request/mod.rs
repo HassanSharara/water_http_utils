@@ -140,7 +140,7 @@ impl<'buf,const HC:usize> HttpRequest<'buf, HC> {
 
         let first_line = HttpFirstLine::from_server(bytes)?;
 
-        let headers = HttpHeaders::<N>::new(&bytes[first_line.first_line_length-1..])?;
+        let headers = HttpHeaders::<N>::new(&bytes[first_line.first_line_length..])?;
 
         Ok(
             HttpRequest {
@@ -241,7 +241,7 @@ impl<'buf> HttpPath<'buf> {
 
 
 
-#[cfg(test)]
+#[cfg(all(feature = "server",test))]
 mod test {
     use crate::request::HttpRequest;
 
