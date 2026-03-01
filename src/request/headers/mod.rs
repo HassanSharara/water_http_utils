@@ -7,25 +7,11 @@ use std::arch::x86_64::*;
 
 #[derive(Debug)]
 pub struct HttpHeaders<'buf, const HL: usize> {
-    /// Internal array of header lines
-    lines: [HeaderLine<'buf>; HL],
-    /// Cached content length
+    /// Internal storage - renamed to _lines to allow .lines() method
+    _lines: [HeaderLine<'buf>; HL],
     pub content_length: Option<usize>,
-    /// Total length of the headers in bytes
     pub headers_length: usize,
-    /// The actual number of headers parsed
     pub count: usize,
-}
-
-#[inline(always)]
-fn bytes_to_usize(bytes: &[u8]) -> Option<usize> {
-    if bytes.is_empty() || bytes.len() > 20 { return None; }
-    let mut result = 0usize;
-    for &byte in bytes {
-        if byte < b'0' || byte > b'9' { return None; }
-        result = result.checked_mul(10)?.checked_add((byte - b'0') as usize)?;
-    }
-    Some(result)
 }
 
 impl<'buf, const HL: usize> HttpHeaders<'buf, HL> {
@@ -43,10 +29,11 @@ impl<'buf, const HL: usize> HttpHeaders<'buf, HL> {
             while ptr < end_ptr {
                 let remaining = end_ptr.offset_from(ptr) as usize;
 
+                // End of headers check
                 if remaining >= 2 {
                     if (ptr as *const u16).read_unaligned() == 0x0A0D {
                         return Ok(HttpHeaders {
-                            lines,
+                            _lines: lines, // Assign to the internal field
                             headers_length: ptr.offset_from(base_ptr) as usize + 2,
                             count: lines_index,
                             content_length,
@@ -54,6 +41,7 @@ impl<'buf, const HL: usize> HttpHeaders<'buf, HL> {
                     }
                 } else { return Err(CreatingHeadersErrors::ReadMore); }
 
+                // SIMD find ':'
                 let mut c_pos = None;
                 #[cfg(target_arch = "x86_64")]
                 if remaining >= 16 {
@@ -74,6 +62,7 @@ impl<'buf, const HL: usize> HttpHeaders<'buf, HL> {
                 let mut val_ptr = ptr.add(colon_idx + 1);
                 if val_ptr < end_ptr && *val_ptr == b' ' { val_ptr = val_ptr.add(1); }
 
+                // SIMD find '\n'
                 let val_rem = end_ptr.offset_from(val_ptr) as usize;
                 let mut l_pos = None;
                 #[cfg(target_arch = "x86_64")]
@@ -115,30 +104,41 @@ impl<'buf, const HL: usize> HttpHeaders<'buf, HL> {
         Err(CreatingHeadersErrors::ReadMore)
     }
 
-    /// Restored: getting key value as ['&[u8]']
+    /// FIX: This is the method your mod.rs:363 needs!
+    #[inline(always)]
+    pub fn lines(&self) -> &[HeaderLine<'buf>] {
+        // Only return the initialized portion
+        &self._lines[..self.count]
+    }
+
+    /// FIX: Getter for generic access
+    pub fn get(&self, key: &str) -> Option<&HeaderValue<'buf>> {
+        self.lines().iter().find(|l| l.key.eq_ignore_ascii_case(key)).map(|l| &l.value)
+    }
+
     pub fn get_as_bytes(&self, key: &str) -> Option<&'buf [u8]> {
-        for i in 0..self.count {
-            let line = unsafe { self.lines.get_unchecked(i) };
-            if line.key.eq_ignore_ascii_case(key) {
-                return Some(line.value.as_bytes());
-            }
-        }
-        None
+        self.get(key).map(|v| v.as_bytes())
     }
 
-    /// Restored: getting key value as ['&str']
     pub fn get_as_str(&self, key: &str) -> Option<&'buf str> {
-        self.get_as_bytes(key).map(|b| unsafe { std::str::from_utf8_unchecked(b) })
+        self.get(key).map(|v| v.to_str())
     }
 
-    /// Restored: public method for content length
-    pub fn content_length(&self) -> Option<usize> {
-        self.content_length
+    /// FIX: Return Option<&usize> to match your getter logic
+    pub fn content_length(&self) -> Option<&usize> {
+        self.content_length.as_ref()
     }
+}
 
-    pub fn lines(&self) -> Vec<&HeaderLine<'buf>> {
-        self.lines.iter().take(self.count).collect()
+#[inline(always)]
+fn bytes_to_usize(bytes: &[u8]) -> Option<usize> {
+    if bytes.is_empty() || bytes.len() > 20 { return None; }
+    let mut result = 0usize;
+    for &byte in bytes {
+        if byte < b'0' || byte > b'9' { return None; }
+        result = result.checked_mul(10)?.checked_add((byte - b'0') as usize)?;
     }
+    Some(result)
 }
 
 #[derive(Debug, Clone, Copy)]
