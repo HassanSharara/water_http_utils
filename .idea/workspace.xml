@@ -10,8 +10,7 @@
     <list default="true" id="289286b1-1b40-4c0a-b27b-23d2e47589e1" name="Changes" comment="adding from bytes simd">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/request/headers/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/request/headers/mod.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/benches/parser_becnh.rs" beforeDir="false" afterPath="$PROJECT_DIR$/benches/parser_becnh.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -176,7 +175,8 @@
       <workItem from="1771763349367" duration="10000" />
       <workItem from="1771764365559" duration="829000" />
       <workItem from="1772330630041" duration="145000" />
-      <workItem from="1772336910539" duration="674000" />
+      <workItem from="1772336910539" duration="3225000" />
+      <workItem from="1772392861685" duration="303000" />
     </task>
     <task id="LOCAL-00001" summary="change bytes to usize conversion">
       <option name="closed" value="true" />
@@ -298,7 +298,63 @@
       <option name="project" value="LOCAL" />
       <updated>1772330736279</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="adding from bytes simd">
+      <option name="closed" value="true" />
+      <created>1772337603501</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1772337603501</updated>
+    </task>
+    <task id="LOCAL-00017" summary="adding from bytes simd">
+      <option name="closed" value="true" />
+      <created>1772338710576</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1772338710576</updated>
+    </task>
+    <task id="LOCAL-00018" summary="adding from bytes simd">
+      <option name="closed" value="true" />
+      <created>1772339244628</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1772339244628</updated>
+    </task>
+    <task id="LOCAL-00019" summary="adding from bytes simd">
+      <option name="closed" value="true" />
+      <created>1772339347352</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1772339347352</updated>
+    </task>
+    <task id="LOCAL-00020" summary="adding from bytes simd">
+      <option name="closed" value="true" />
+      <created>1772339784897</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1772339784897</updated>
+    </task>
+    <task id="LOCAL-00021" summary="adding from bytes simd">
+      <option name="closed" value="true" />
+      <created>1772339900200</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1772339900200</updated>
+    </task>
+    <task id="LOCAL-00022" summary="adding from bytes simd">
+      <option name="closed" value="true" />
+      <created>1772340072405</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1772340072405</updated>
+    </task>
+    <option name="localTasksCounter" value="23" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
