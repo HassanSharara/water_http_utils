@@ -2,7 +2,6 @@ mod errors;
 
 use std::collections::HashMap;
 pub use errors::*;
-use crate::config::global_config;
 use crate::request::CreatingRequestErrors;
 
 /// including all parsed headers
@@ -17,15 +16,15 @@ use crate::request::CreatingRequestErrors;
 
  }
 
-macro_rules! try_forward {
-    ($index:ident,$last_index:ident,$total_length:ident) => {
-        try_forward!($index + 1,$last_index,$total_length);
-    };
-    ($index:ident+$v:expr,$last_index:ident,$total_length:ident) => {
-        if($index+$v >= $total_length ) {return CreatingHeadersErrors::ReadMore.into();}
-        $last_index = $index +$v;
-    };
-}
+// macro_rules! try_forward {
+//     ($index:ident,$last_index:ident,$total_length:ident) => {
+//         try_forward!($index + 1,$last_index,$total_length);
+//     };
+//     ($index:ident+$v:expr,$last_index:ident,$total_length:ident) => {
+//         if($index+$v >= $total_length ) {return CreatingHeadersErrors::ReadMore.into();}
+//         $last_index = $index +$v;
+//     };
+// }
 
 #[inline(always)]
 /// for converting usize bytes to usize object in rust

@@ -24,15 +24,20 @@ impl<'buf,const HC:usize> HttpRequest<'buf, HC> {
 
 
     #[cfg(feature = "server")]
+    #[inline(always)]
     /// getting http request method
     pub fn method(&self)->&'buf str{
         self.http_first_line.method
     }
+
+
+    #[inline(always)]
     /// getting http request version
     pub fn version(&self)->&'buf str{
         self.http_first_line.version
     }
     /// getting http request path
+    #[inline(always)]
     pub fn path(&self)->&HttpPath<'buf>{
         &self.http_first_line.path
     }
@@ -51,6 +56,7 @@ impl<'buf,const HC:usize> HttpRequest<'buf, HC> {
 
     /// creating http request structure from given bytes with zero copies
     #[cfg(feature = "server")]
+    #[inline(always)]
     pub  fn from_incoming_bytes<const N:usize>(mut bytes:&'buf [u8])->Result<HttpRequest<'buf,N>,CreatingRequestErrors>{
         let mut step = CreatingRequestSteps::init();
          let mut first_line = None;
@@ -135,7 +141,7 @@ impl<'buf,const HC:usize> HttpRequest<'buf, HC> {
 
     /// creating http request with fast
     #[cfg(feature = "server")]
-
+    #[inline(always)]
     pub fn from_bytes<const N:usize>(bytes:&'buf [u8])->Result<HttpRequest<'buf,N>,CreatingRequestErrors>{
 
         let first_line = HttpFirstLine::from_server(bytes)?;

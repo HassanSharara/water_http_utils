@@ -1,16 +1,16 @@
 use crate::config::global_config;
 use crate::request::{CreatingRequestErrors, HttpPath};
 
-macro_rules! try_increment_index {
-    ($index:ident,$len:ident,$last_index_used:ident) => {
-          if $index+1 >= $len { return CreatingRequestErrors::InsufficientDataSoReadMore.into()}
-          $last_index_used = $index + 1;
-    };
-     ($index:ident + $num:expr,$len:ident,$last_index_used:ident) => {
-          if $index+$num >= $len { return CreatingRequestErrors::InsufficientDataSoReadMore.into()}
-          $last_index_used = $index + $num;
-    };
-}
+// macro_rules! try_increment_index {
+//     ($index:ident,$len:ident,$last_index_used:ident) => {
+//           if $index+1 >= $len { return CreatingRequestErrors::InsufficientDataSoReadMore.into()}
+//           $last_index_used = $index + 1;
+//     };
+//      ($index:ident + $num:expr,$len:ident,$last_index_used:ident) => {
+//           if $index+$num >= $len { return CreatingRequestErrors::InsufficientDataSoReadMore.into()}
+//           $last_index_used = $index + $num;
+//     };
+// }
 
 
 /// head of http request or the first line
@@ -104,7 +104,7 @@ impl <'buf> HttpFirstLine<'buf> {
         if len < 12 { return Err(CreatingRequestErrors::InsufficientDataSoReadMore); }
 
         let (method_len, method_end_ptr) = unsafe {
-            let first_8 = unsafe { (base_ptr as *const u64).read_unaligned() };
+            let first_8 =(base_ptr as *const u64).read_unaligned() ;
             // Use bitmask to find the space (0x20) in the first 8 bytes
             if (first_8 & 0xFFFFFF) == 0x20544547 { // "GET "
                 (3, base_ptr.add(3))

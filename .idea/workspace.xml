@@ -9,6 +9,9 @@
   <component name="ChangeListManager">
     <list default="true" id="289286b1-1b40-4c0a-b27b-23d2e47589e1" name="Changes" comment="adding from bytes simd">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/request/first_line/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/request/first_line/mod.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/request/headers/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/request/headers/mod.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -107,8 +110,8 @@
     </configuration>
     <list>
       <item itemvalue="Cargo.Run" />
-      <item itemvalue="Cargo.Test request::test" />
       <item itemvalue="Cargo.Test water_http_utils" />
+      <item itemvalue="Cargo.Test request::test" />
     </list>
     <recent_temporary>
       <list>
@@ -171,6 +174,7 @@
       <workItem from="1771720062272" duration="4532000" />
       <workItem from="1771755555874" duration="5186000" />
       <workItem from="1771763349367" duration="10000" />
+      <workItem from="1771764365559" duration="829000" />
     </task>
     <task id="LOCAL-00001" summary="change bytes to usize conversion">
       <option name="closed" value="true" />
@@ -268,7 +272,15 @@
       <option name="project" value="LOCAL" />
       <updated>1771759133555</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="adding from bytes simd">
+      <option name="closed" value="true" />
+      <created>1771764464792</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1771764464792</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
