@@ -787,7 +787,7 @@ dependencies = [
 
 [[package]]
 name = "water_http_utils"
-version = "0.4.1-beta.7"
+version = "0.4.1-beta.8"
 dependencies = [
  "chrono",
  "criterion",

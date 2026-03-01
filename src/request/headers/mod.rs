@@ -1,17 +1,19 @@
 mod errors;
-
 pub use errors::*;
 use core::mem::MaybeUninit;
 
 #[cfg(target_arch = "x86_64")]
 use std::arch::x86_64::*;
 
-/// including all parsed headers
 #[derive(Debug)]
 pub struct HttpHeaders<'buf, const HL: usize> {
-    pub lines: [HeaderLine<'buf>; HL],
+    /// Internal array of header lines
+    lines: [HeaderLine<'buf>; HL],
+    /// Cached content length
     pub content_length: Option<usize>,
+    /// Total length of the headers in bytes
     pub headers_length: usize,
+    /// The actual number of headers parsed
     pub count: usize,
 }
 
@@ -41,7 +43,6 @@ impl<'buf, const HL: usize> HttpHeaders<'buf, HL> {
             while ptr < end_ptr {
                 let remaining = end_ptr.offset_from(ptr) as usize;
 
-                // 1. End of Headers Check (\r\n)
                 if remaining >= 2 {
                     if (ptr as *const u16).read_unaligned() == 0x0A0D {
                         return Ok(HttpHeaders {
@@ -53,7 +54,6 @@ impl<'buf, const HL: usize> HttpHeaders<'buf, HL> {
                     }
                 } else { return Err(CreatingHeadersErrors::ReadMore); }
 
-                // 2. SIMD Search for ':'
                 let mut c_pos = None;
                 #[cfg(target_arch = "x86_64")]
                 if remaining >= 16 {
@@ -74,7 +74,6 @@ impl<'buf, const HL: usize> HttpHeaders<'buf, HL> {
                 let mut val_ptr = ptr.add(colon_idx + 1);
                 if val_ptr < end_ptr && *val_ptr == b' ' { val_ptr = val_ptr.add(1); }
 
-                // 3. SIMD Search for '\n'
                 let val_rem = end_ptr.offset_from(val_ptr) as usize;
                 let mut l_pos = None;
                 #[cfg(target_arch = "x86_64")]
@@ -96,14 +95,12 @@ impl<'buf, const HL: usize> HttpHeaders<'buf, HL> {
                 if v_len > 0 && *val_ptr.add(v_len - 1) == b'\r' { v_len -= 1; }
                 let val_raw = std::slice::from_raw_parts(val_ptr, v_len);
 
-                // 4. Content-Length Optimization
                 if key_raw.len() == 14 && (key_raw[0] | 32) == b'c' {
                     if key_raw.eq_ignore_ascii_case(b"content-length") {
                         content_length = bytes_to_usize(val_raw);
                     }
                 }
 
-                // 5. Safe write to uninitialized memory
                 if lines_index < HL {
                     std::ptr::write(lines.as_mut_ptr().add(lines_index), HeaderLine {
                         key: std::str::from_utf8_unchecked(key_raw),
@@ -118,18 +115,25 @@ impl<'buf, const HL: usize> HttpHeaders<'buf, HL> {
         Err(CreatingHeadersErrors::ReadMore)
     }
 
-    pub fn get(&self, key: &str) -> Option<&HeaderValue<'buf>> {
+    /// Restored: getting key value as ['&[u8]']
+    pub fn get_as_bytes(&self, key: &str) -> Option<&'buf [u8]> {
         for i in 0..self.count {
             let line = unsafe { self.lines.get_unchecked(i) };
             if line.key.eq_ignore_ascii_case(key) {
-                return Some(&line.value);
+                return Some(line.value.as_bytes());
             }
         }
         None
     }
 
+    /// Restored: getting key value as ['&str']
     pub fn get_as_str(&self, key: &str) -> Option<&'buf str> {
-        self.get(key).map(|v| v.to_str())
+        self.get_as_bytes(key).map(|b| unsafe { std::str::from_utf8_unchecked(b) })
+    }
+
+    /// Restored: public method for content length
+    pub fn content_length(&self) -> Option<usize> {
+        self.content_length
     }
 
     pub fn lines(&self) -> Vec<&HeaderLine<'buf>> {
@@ -145,19 +149,11 @@ pub struct HeaderLine<'buf> {
 
 #[derive(Debug, Copy, Clone)]
 pub struct HeaderValue<'buf> {
-    pub bytes: &'buf [u8],
+    bytes: &'buf [u8],
 }
 
 impl<'buf> HeaderValue<'buf> {
     pub fn new(bytes: &'buf [u8]) -> Self { Self { bytes } }
+    pub fn as_bytes(&self) -> &'buf [u8] { self.bytes }
     pub fn to_str(&self) -> &'buf str { unsafe { std::str::from_utf8_unchecked(self.bytes) } }
-}
-
-// Fixed conversions
-impl<'buf> From<&'buf [u8]> for HeaderValue<'buf> {
-    fn from(bytes: &'buf [u8]) -> Self { HeaderValue::new(bytes) }
-}
-
-impl<'a, 'buf> From<&'a HeaderValue<'buf>> for &'buf str {
-    fn from(value: &'a HeaderValue<'buf>) -> Self { value.to_str() }
 }
