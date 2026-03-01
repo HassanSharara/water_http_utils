@@ -130,6 +130,7 @@ impl<'buf,const HL:usize> HttpHeaders<'buf,HL>{
                             lines,
                             headers_length: ptr.offset_from(base_ptr) as usize + 2,
                             count: lines_index, // Ensure your struct has this field!
+                            content_length:None
                         });
                     }
                 } else { return Err(CreatingHeadersErrors::ReadMore); }
