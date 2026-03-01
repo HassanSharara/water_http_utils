@@ -10,7 +10,7 @@ use crate::request::CreatingRequestErrors;
  {
      lines:[HeaderLine<'buf>;HL],
      /// defining content length for public and fast access
-     // pub content_length:Option<usize>,
+     pub content_length:Option<usize>,
      /// defining headers length
      pub headers_length:usize,
      pub count: usize,
@@ -191,7 +191,20 @@ impl<'buf,const HL:usize> HttpHeaders<'buf,HL>{
     }
 
 
-
+    pub fn content_length(&self)->Option<&usize>{
+        if let Some(r) = self.content_length.as_ref() {
+            return Some(r)
+        }
+        if let Some(r) = self.get("Content-Length") {
+            let cl = bytes_to_usize(r.as_bytes());
+            if let Some( u )  = cl {
+                let p  = unsafe{std::ptr::addr_of!(self.content_length) as *mut Option<usize>};
+                unsafe {*p = Some(u);}
+                return self.content_length.as_ref()
+            }
+        }
+        None
+    }
 
 
     pub fn get(&self,key:&str)->Option<&HeaderValue<'buf>>{
@@ -272,6 +285,10 @@ pub struct HeaderValue<'buf> {
 
 impl <'buf> HeaderValue<'buf> {
 
+
+    pub fn as_bytes(&self)->&'buf [u8]{
+        self.bytes
+    }
     pub (crate) fn new(bytes:&'buf [u8])->HeaderValue<'buf>{
         HeaderValue {
             bytes
