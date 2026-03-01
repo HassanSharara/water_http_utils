@@ -245,7 +245,15 @@ impl<'buf> HttpPath<'buf> {
 
 }
 
-
+impl From<CreatingHeadersErrors> for CreatingRequestErrors {
+    fn from(err: CreatingHeadersErrors) -> Self {
+        match err {
+            CreatingHeadersErrors::ReadMore => CreatingRequestErrors::InsufficientDataSoReadMore,
+            CreatingHeadersErrors::MaxHeadersSizeReachedOut => CreatingRequestErrors::DangerousInvalidHttpFormat,
+            _ => CreatingRequestErrors::InvalidHttpFormat,
+        }
+    }
+}
 
 #[cfg(all(feature = "server",test))]
 mod test {

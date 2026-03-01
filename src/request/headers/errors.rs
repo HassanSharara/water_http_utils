@@ -1,7 +1,7 @@
 
 /// defining errors while parsing bytes to http headers
 #[derive(Debug)]
- pub enum CreatingHeadersErrors {
+    pub enum CreatingHeadersErrors {
     /// for invalid headers format
     InvalidFormat,
     /// max headers size
